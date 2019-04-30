@@ -1,0 +1,55 @@
+---
+# tasks file for docker
+- name: uninstall older docker
+  apt:
+    name:
+      - docker
+      - docker-engine
+      - docker.io
+    state: absent
+
+- name: install needed software for installing docker
+  apt:
+    name: "{{ packages }}"
+    update_cache: yes
+    state: present
+  vars:
+    packages:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - gnupg2
+      - software-properties-common
+      - telnet
+      - lsb-release
+      - systemd
+
+- name: get os release
+  shell: . /etc/os-release; echo $ID
+  register: osr
+
+- name: get lsb release
+  shell: lsb_release -cs
+  register: lsbr
+
+- name: add docker's pgp key
+  apt_key:
+    url: "https://download.docker.com/linux/{{ osr['stdout'] }}/gpg"
+
+- name: add docker's repository
+  apt_repository:
+    repo: "deb [arch=amd64] https://download.docker.com/linux/{{ osr['stdout'] }} {{ lsbr['stdout'] }} stable"
+    state: present
+
+- name: install docker
+  apt:
+    name: docker-ce
+    update_cache: yes
+    state: present
+
+- name: setup docker service
+  systemd:
+    name: docker
+    state: started
+    enabled: yes
+    daemon_reload: yes

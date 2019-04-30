@@ -1,0 +1,8 @@
+---
+- hosts:  vagrants
+  become: true
+  user:   vagrant
+  roles:
+    - others
+    - docker
+    - core

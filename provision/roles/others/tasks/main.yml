@@ -1,0 +1,28 @@
+---
+# tasks file for others
+- name: install utils
+  apt:
+    name: "{{ packages }}"
+    update_cache: yes
+    state: present
+  vars:
+    packages:
+      - neovim
+      - git
+      - wireshark
+
+- name: install GNOME
+  apt:
+    name: "{{ packages }}"
+    update_cache: yes
+    state: present
+  vars:
+    packages:
+      - x-window-system
+      - gnome
+
+- name: write startx to bashrt
+  lineinfile:
+    dest: "/home/{{ ansible_ssh_user }}/.bashrc"
+    line: startx
+    insertbefore: EOF

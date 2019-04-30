@@ -1,0 +1,38 @@
+---
+- name: install quagga package
+  apt:
+    name: quagga
+    state: present
+    update_cache: yes
+
+- name: downlod deb files
+  get_url:
+    url: "https://github.com/coreemu/core/releases/download/release-5.2.1/{{ item }}"
+    dest: "/tmp/{{ item }}"
+    mode: 0744
+  with_items:
+    - "python-core_systemd_5.2.1_all.deb"
+    - "core-gui_5.2.1_amd64.deb"
+
+- name: install CORE package from deb
+  apt:
+    deb: "/tmp/{{ item }}"
+    update_cache: yes
+  with_items:
+    - "python-core_systemd_5.2.1_all.deb"
+    - "core-gui_5.2.1_amd64.deb"
+
+- name: setup systemd
+  systemd:
+    name: core-daemon.service
+    state: started
+    enabled: yes
+    daemon_reload: yes
+
+- name: setup core to work with docker
+  lineinfile:
+    state: present
+    dest: "/home/{{ ansible_ssh_user }}/.core/myservices/__init__.py"
+    backrefs: yes
+    regexp: '\["sample"\]'
+    line: '["sample", "docker"]'
